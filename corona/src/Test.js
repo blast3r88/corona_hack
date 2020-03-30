@@ -6,6 +6,8 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
+import SimpleCard from './SimpleCard';
+import { Grid } from '@material-ui/core';
 
 window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
 var SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList
@@ -37,20 +39,34 @@ colors.forEach(function (v, i, a) {
 const useStyles = makeStyles(theme => ({
     root: {
         flexGrow: 1,
+        minWidth: 275,
     },
     menuButton: {
         marginRight: theme.spacing(2),
     },
     title: {
         flexGrow: 1,
+        fontSize: 14,
+    },
+    bullet: {
+        display: 'inline-block',
+        margin: '0 2px',
+        transform: 'scale(0.8)',
+    },
+    pos: {
+        marginBottom: 12,
     },
 }));
 
 
 
 
-function Test() {
+function Test(props) {
 
+
+
+    const [helpList, setHelpList] = useState([
+    ]);
 
     const [start, setStart] = useState(false);
 
@@ -60,13 +76,14 @@ function Test() {
     const [reading, setReading] = useState(-1);
     const [answers, setAnswers] = useState([]);
 
+
     const [action, setAction] = useState("nothing");
 
     var questions = ["Hello whats your name?",
-    "Dear"+answers[0] +"Is your adress Zurich, Langstrasse 5?", "What would you like to order?","How much?",
-    "Is that all?", "Your order has been placed.",
-    "Thomas has picked up your order.", "Dora has payed for your bill.", "Your order has been arrived. Have a nice day."];
-
+        "Dear" + answers[0] + "Is your adress Zurich, Langstrasse 5?", "What would you like to order?", "How much?",
+        "Is that all?", "Your order has been placed.",""
+       ];
+// "Peter has picked up your order.", "Dora has payed for your bill.", "Your order has been arrived. Have a nice day."
     function toggleListen() {
         setListening(!listening);
     }
@@ -90,8 +107,23 @@ function Test() {
     }, [answers]);
 
     useEffect(() => {
-        if (-1 < stage && stage<questions.length) {
+
+        if (-1 < stage && stage < questions.length) {
+           
+        
+            if ( stage == 6) {
+                props.addToShopping(answers);
+             var newHelpList = helpList.slice();
+            newHelpList.push({ name: answers[0], location: "Zurich, Langstrasse 5", order: answers[2], quant: answers[3] });
+            setHelpList(newHelpList);
+            
+            }
+
             speak(questions[stage]);
+        } else if (stage == questions.length) {
+
+            setStage(-1);
+            setAnswers([]);
         }
 
     }, [stage]);
@@ -180,8 +212,8 @@ function Test() {
         recognition.onerror = event => {
             console.log("empty");
             recognition.stop();
-            speak("Sorry didnt hear that.");
-         //   setStage(stage);
+           // speak("Sorry didnt hear that.");
+            //   setStage(stage);
         }
 
     }
@@ -191,20 +223,7 @@ function Test() {
 
     return (
         <div className={classes.root}>
-            <AppBar position="static">
-                <Toolbar>
-                    <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography variant="h6" className={classes.title}>
-                        Order
-            </Typography>
-                    <Button color="inherit">Login</Button>
-                </Toolbar>
-            </AppBar>
-
             <div>
-
                 <Button variant="contained" color="primary" onClick={() => setStart(true)}>
                     Start
                 </Button>
@@ -218,6 +237,21 @@ function Test() {
             <div>
                 {answers.toString()}
             </div>
+
+            <Grid container className={classes.root} spacing={2}>
+                {
+                    helpList.map(function (item, i) {
+                        return <Grid item xs={12}>
+                            <SimpleCard data={item} />
+                        </Grid>
+                    })
+                }
+
+
+            </Grid>
+
+
+
         </div>
     );
 }
